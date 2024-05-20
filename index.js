@@ -1,39 +1,62 @@
 const express = require('express');
-const mongoose = require('mongoose');
 const cors = require('cors');
+const mongoose = require('mongoose');
+const userModel = require('./models/userModel');
 
 const app = express();
-const MONGO_URL="mongodb+srv://samuel:Coldpath@2935@users.np1fvcv.mongodb.net/"
-// mongodb+srv://samuel:Coldpath@2935@users.np1fvcv.mongodb.net/?retryWrites=true&w=majority&appName=users
-// mongodb+srv://samuel:Coldpath@2935@users.np1fvcv.mongodb.net/
-app.use(express.urlencoded({ extended: true }));
+const port = process.env.PORT || 8080;
 app.use(express.json());
-app.use((req, res, next) => {
-  console.log(req.path);
-  next();
+app.use(cors());
+
+mongoose.connect('mongodb://127.0.0.1:27017/users');
+
+app.get('/', (req, res) => {
+  userModel
+    .find({})
+    .then((users) => res.json(users))
+    .catch((err) => console.log(err));
 });
 
-app.use('/uploads', express.static('uploads'));
+app.get('/getUser/:id', (req, res) => {
+  const id = req.params.id;
+  userModel
+    .findById({ _id: id })
+    .then((users) => res.json(users))
+    .catch((err) => console.log(err));
+});
 
-app.use(
-  cors({
-    origin: '*',
-  })
-);
+app.put('/updateUser/:id', (req, res) => {
+  const id = req.params.id;
+  userModel
+    .findByIdAndUpdate(
+      { _id: id },
+      {
+        firstName: req.body.firstName,
+        lastName: req.body.lastName,
+        email: req.body.email,
+        password: req.body.password,
+        phone: req.body.phone,
+      }
+    )
+    .then((users) => res.json(users))
+    .catch((err) => console.log(err));
+});
 
-// MONGO_URL IS NOT DEFINED
-mongoose.set('strictQuery', true);
+app.delete('/deleteUser/:id', (req, res) => {
+  const id = req.params.id;
+  userModel
+    .findByIdAndDelete({ _id: id })
+    .then((res) => res.json(res))
+    .catch((err) => console.log(err));
+});
 
-mongoose
-  .connect(process.env.MONGO_URL, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    app.listen(process.env.PORT, () => {
-      console.log('Server Running and Database Connected');
-    });
-  })
-  .catch((err) => {
-    console.log(err);
-  });
+app.post('/createUsers', (req, res) => {
+  userModel
+    .create(req.body)
+    .then((users) => res.json(users))
+    .catch((err) => console.log(err));
+});
+
+app.listen(port, () => {
+  console.log('app listening to port 8080');
+});
