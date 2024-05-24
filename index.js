@@ -8,7 +8,9 @@ const port = process.env.PORT || 8080;
 app.use(express.json());
 app.use(cors());
 
-mongoose.connect('mongodb://127.0.0.1:27017/users');
+mongoose.connect(
+  'mongodb+srv://samuel:<password>@users.np1fvcv.mongodb.net/?retryWrites=true&w=majority&appName=users'
+);
 
 app.get('/', (req, res) => {
   userModel
